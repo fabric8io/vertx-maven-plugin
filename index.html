@@ -564,9 +564,8 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#package-goal-examples">5.1. vert.x:package Examples</a></li>
 <li><a href="#run-goal-examples">5.2. vert.x:run Examples</a>
 <ul class="sectlevel3">
-<li><a href="#run-with-forked">5.2.1. run goal as forked process</a></li>
-<li><a href="#run-with-redeploy-default">5.2.2. run goal with vert.x redeploy enabled</a></li>
-<li><a href="#run-with-redeploy-default">5.2.3. run goal with vert.x redeploy enabled with custom pattern</a></li>
+<li><a href="#run-with-redeploy-default">5.2.1. run goal with vert.x redeploy enabled</a></li>
+<li><a href="#run-with-redeploy-default">5.2.2. run goal with vert.x redeploy enabled with custom pattern</a></li>
 </ul>
 </li>
 <li><a href="#start-goal-examples">5.3. vert.x:start Examples</a>
@@ -664,7 +663,7 @@ to the <strong>MANIFEST.MF</strong> with values configured using the <strong><a 
 <div class="paragraph">
 <p>The vert.x application could also be run without building building the fat jars, typically during the
 development mode.  The <strong><a href="#vertx:run">vertx:run</a></strong> goal helps in running the application. The
-application will be run in either forked or non-forked mode based on the configuration of the goal.</p>
+application will be run in as forked process with additional configurations based on the goals.</p>
 </div>
 <div class="paragraph">
 <p>To run the application vert.x application in foreground, execute the following maven command</p>
@@ -886,8 +885,7 @@ as part of the jar</p>
 <h3 id="vertx:run">4.2. <strong>vertx:run</strong></h3>
 <div class="paragraph">
 <p>This goal allows to run the vert.x application as part of the maven build.
-The application run can either be run as forked and non-forked process.
-By default the application is run in non-forked mode.</p>
+The application is always run the vert.x application as a forked process.</p>
 </div>
 <div class="paragraph">
 <p>The goal does not have any exclusive configuration,  <strong><a href="#common:run-configurations">Common Run Configuration</a></strong>
@@ -1122,40 +1120,7 @@ please update the plugin version as needed
 </div>
 </div>
 <div class="sect3">
-<h4 id="run-with-forked">5.2.1. run goal as forked process</h4>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="xml">---
-<span class="tag">&lt;plugin&gt;</span>
-    <span class="tag">&lt;groupId&gt;</span>org.workspace7.maven.plugins<span class="tag">&lt;/groupId&gt;</span>
-    <span class="tag">&lt;artifactId&gt;</span>vertx-maven-plugin<span class="tag">&lt;/artifactId&gt;</span>
-    <span class="tag">&lt;version&gt;</span>1.0.0-SNAPSHOT<span class="tag">&lt;/version&gt;</span>
-    <span class="tag">&lt;executions&gt;</span>
-        <span class="tag">&lt;execution&gt;</span>
-            <span class="tag">&lt;phase&gt;</span>package<span class="tag">&lt;/phase&gt;</span>
-            <span class="tag">&lt;goals&gt;</span>
-                <span class="tag">&lt;goal&gt;</span>run<span class="tag">&lt;/goal&gt;</span>
-            <span class="tag">&lt;/goals&gt;</span>
-            <span class="tag">&lt;configuration&gt;</span>
-               <span class="tag">&lt;forked&gt;</span>true<span class="tag">&lt;/forked&gt;</span><i class="conum" data-value="1"></i><b>(1)</b>
-            <span class="tag">&lt;/configuration&gt;</span>
-        <span class="tag">&lt;/execution&gt;</span>
-    <span class="tag">&lt;/executions&gt;</span>
-<span class="tag">&lt;/plugin&gt;</span>
----</code></pre>
-</div>
-</div>
-<div class="colist arabic">
-<table>
-<tr>
-<td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>adding forked argument</td>
-</tr>
-</table>
-</div>
-</div>
-<div class="sect3">
-<h4 id="run-with-redeploy-default">5.2.2. run goal with vert.x redeploy enabled</h4>
+<h4 id="run-with-redeploy-default">5.2.1. run goal with vert.x redeploy enabled</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="xml">---
@@ -1188,7 +1153,7 @@ please update the plugin version as needed
 </div>
 </div>
 <div class="sect3">
-<h4 id="run-with-redeploy-default">5.2.3. run goal with vert.x redeploy enabled with custom pattern</h4>
+<h4 id="run-with-redeploy-default">5.2.2. run goal with vert.x redeploy enabled with custom pattern</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="xml">---
@@ -1400,7 +1365,7 @@ of application ids as shown below to trigger stop of the those applications</p>
 <div id="footer">
 <div id="footer-text">
 Version 1.0-SNAPSHOT<br>
-Last updated 2016-11-18 10:43:41 UTC
+Last updated 2016-11-18 11:38:37 UTC
 </div>
 </div>
 </body>
