@@ -516,7 +516,7 @@ table.CodeRay td.code>pre{padding:0}
 <div class="details">
 <span id="author" class="author">Kamesh Sampath,Roland Huß</span><br>
 <span id="revnumber">version 0.1-SNAPSHOT,</span>
-<span id="revdate">2016-11-22</span>
+<span id="revdate">2016-12-01</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Vert.X Maven Plugin</div>
@@ -561,7 +561,11 @@ table.CodeRay td.code>pre{padding:0}
 </li>
 <li><a href="#vertx:examples">5. Example Configurations</a>
 <ul class="sectlevel2">
-<li><a href="#package-goal-examples">5.1. vert.x:package Examples</a></li>
+<li><a href="#package-goal-examples">5.1. vert.x:package Examples</a>
+<ul class="sectlevel3">
+<li><a href="#package-goal-serviceRelocator-examples">5.1.1. package goal with vert.x serviceRelocator</a></li>
+</ul>
+</li>
 <li><a href="#run-goal-examples">5.2. vert.x:run Examples</a>
 <ul class="sectlevel3">
 <li><a href="#run-with-redeploy-default">5.2.1. run goal with vert.x redeploy enabled</a></li>
@@ -783,12 +787,6 @@ be saved in <code>${project.outputDir}/conf</code> directory</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>${basedir}/src/main/${project.artifactId}.json</code> or <code>${basedir}/src/main/${project.artifactId}.yaml</code> or <code>${basedir}/src/main/${project.artifactId}.yml</code></p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">fork</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Controls whether the application will be run in forked mode or non-forked mode</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">fork</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">redeploy</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">controls whether vertx redeploy is enabled</p></td>
 <td class="tableblock halign-left valign-top"></td>
@@ -798,7 +796,7 @@ be saved in <code>${project.outputDir}/conf</code> directory</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">redeployPatterns</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">The ant based pattern for scanning changes for redeployment.  If redeploy is <strong>true</strong> and redeployPatterns is empty then a default value is will be applied.  This is list of values following standard maven list/array configuration</p></td>
 <td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>src/main/**/*.java</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">all compile source paths and project resource paths will be watched for changes</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">workDirectory</p></td>
@@ -869,9 +867,34 @@ as part of the jar</p>
 <div class="sect3">
 <h4 id="package-configuration">4.1.1. Configuration</h4>
 <div class="paragraph">
-<p>The package goal does not have any additional configuration other the ones mentioned in
+<p>The package goal has the following parameters apart from the ones mentioned in
  <strong><a href="#common:configurations">Common Configuration</a></strong></p>
 </div>
+<table class="tableblock frame-all grid-all spread">
+<caption class="title">Table 5. Package Configuration</caption>
+<colgroup>
+<col style="width: 9.0909%;">
+<col style="width: 45.4545%;">
+<col style="width: 18.1818%;">
+<col style="width: 27.2728%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Element</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Property</th>
+<th class="tableblock halign-left valign-top">Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">serviceRelocator</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The Service Provider relocation mode that need to be used, right now only <code>combine</code> is supported</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&nbsp;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&nbsp;</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
 <h4 id="how-to-add-this-goal-my-maven-project">4.1.2. How to add this goal my maven project ?</h4>
@@ -918,7 +941,7 @@ Currently redeploy pattern is added, but redeploy compilation is work in progres
 <code>start</code> command, passing the configuration values as mentioned below.</p>
 </div>
 <table class="tableblock frame-all grid-all spread">
-<caption class="title">Table 5. Run configuration</caption>
+<caption class="title">Table 6. Run configuration</caption>
 <colgroup>
 <col style="width: 9.0909%;">
 <col style="width: 45.4545%;">
@@ -999,7 +1022,7 @@ your maven project</p>
 <code>stop</code> command, passing the configuration values as mentioned below.</p>
 </div>
 <table class="tableblock frame-all grid-all spread">
-<caption class="title">Table 6. Run configuration</caption>
+<caption class="title">Table 7. Run configuration</caption>
 <colgroup>
 <col style="width: 9.0909%;">
 <col style="width: 45.4545%;">
@@ -1095,6 +1118,32 @@ please update the plugin version as needed
     <span class="tag">&lt;/executions&gt;</span>
 <span class="tag">&lt;/plugin&gt;</span>
 ---</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="package-goal-serviceRelocator-examples">5.1.1. package goal with vert.x serviceRelocator</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="xml">---
+<span class="tag">&lt;plugin&gt;</span>
+    <span class="tag">&lt;groupId&gt;</span>org.workspace7.maven.plugins<span class="tag">&lt;/groupId&gt;</span>
+    <span class="tag">&lt;artifactId&gt;</span>vertx-maven-plugin<span class="tag">&lt;/artifactId&gt;</span>
+    <span class="tag">&lt;version&gt;</span>1.0.0-SNAPSHOT<span class="tag">&lt;/version&gt;</span>
+    <span class="tag">&lt;executions&gt;</span>
+        <span class="tag">&lt;execution&gt;</span>
+            <span class="tag">&lt;phase&gt;</span>package<span class="tag">&lt;/phase&gt;</span>
+            <span class="tag">&lt;goals&gt;</span>
+                <span class="tag">&lt;goal&gt;</span>package<span class="tag">&lt;/goal&gt;</span>
+            <span class="tag">&lt;/goals&gt;</span>
+            <span class="tag">&lt;configuration&gt;</span>
+               <span class="tag">&lt;serviceRelocator&gt;</span>combine<span class="tag">&lt;/serviceRelocator&gt;</span><i class="conum" data-value="1"></i><b>(1)</b>
+            <span class="tag">&lt;/configuration&gt;</span>
+        <span class="tag">&lt;/execution&gt;</span>
+    <span class="tag">&lt;/executions&gt;</span>
+<span class="tag">&lt;/plugin&gt;</span>
+---
+<span class="tag">&lt;1&gt;</span> enabling services relocation in combine mode</code></pre>
+</div>
 </div>
 </div>
 </div>
@@ -1365,7 +1414,7 @@ of application ids as shown below to trigger stop of the those applications</p>
 <div id="footer">
 <div id="footer-text">
 Version 0.1-SNAPSHOT<br>
-Last updated 2016-11-22 12:20:03 UTC
+Last updated 2016-12-01 07:00:39 UTC
 </div>
 </div>
 </body>
