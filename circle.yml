@@ -18,8 +18,8 @@ general:
       - 'gh-pages'
 
 deployment:
-  website:
-    branch: master
+  pluginDoc:
+    tag: /v[0-9]+(\.[0-9]+)(\.[0-9]+){3}/
     owner: fabric8io
     commands:
       - git config --global user.email "circleci@fabric8.io"
