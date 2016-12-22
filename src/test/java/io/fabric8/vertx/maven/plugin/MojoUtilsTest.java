@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
 /**
  * @author kameshs
  */
-public class MojoUtilsTest {
+public class MojoUtilsTest extends AbstractTestCase {
 
 
     @Test
@@ -53,13 +53,5 @@ public class MojoUtilsTest {
         assertFalse(jarPlugin.isPresent());
     }
 
-    private Model buildModel(File pomFile) {
-        try {
-            return new MavenXpp3Reader().read(ReaderFactory.newXmlReader(pomFile));
-        } catch (IOException var3) {
-            throw new RuntimeException("Failed to read POM file: " + pomFile, var3);
-        } catch (XmlPullParserException var4) {
-            throw new RuntimeException("Failed to parse POM file: " + pomFile, var4);
-        }
-    }
+
 }
