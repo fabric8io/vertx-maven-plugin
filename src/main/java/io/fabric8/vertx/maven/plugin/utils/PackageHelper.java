@@ -21,6 +21,7 @@ package io.fabric8.vertx.maven.plugin.utils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -48,6 +49,7 @@ import java.util.stream.Stream;
 public class PackageHelper {
 
     private final JavaArchive archive;
+    private final MavenProject mavenProject;
     private final Attributes.Name MAIN_VERTICLE = new Attributes.Name("Main-Verticle");
     private String mainVerticle;
     private String mainClass;
@@ -57,10 +59,11 @@ public class PackageHelper {
     private String outputFileName;
 
 
-    public PackageHelper(String mainClass, String mainVerticle) {
+    public PackageHelper(MavenProject mavenProject,String mainClass, String mainVerticle) {
         this.archive = ShrinkWrap.create(JavaArchive.class);
         this.mainClass = mainClass;
         this.mainVerticle = mainVerticle;
+        this.mavenProject = mavenProject;
     }
 
 
@@ -80,7 +83,7 @@ public class PackageHelper {
      * @return
      * @throws IOException
      */
-    public File build(Path dir, File primaryArtifactFile) {
+    public File build(Path dir, File primaryArtifactFile) throws MojoExecutionException {
         File classes = new File(dir.toFile(), "classes");
         build(classes, primaryArtifactFile);
         return createFatJar(dir);
@@ -89,7 +92,7 @@ public class PackageHelper {
     /**
      * @param primaryArtifactFile
      */
-    private synchronized void build(File classes, File primaryArtifactFile) {
+    private synchronized void build(File classes, File primaryArtifactFile) throws MojoExecutionException {
         if (primaryArtifactFile != null  && primaryArtifactFile.isFile()) {
             this.archive.as(ZipImporter.class).importFrom(primaryArtifactFile);
         } else if (classes.isDirectory()) {
@@ -100,7 +103,13 @@ public class PackageHelper {
         }
 
         addDependencies();
-        generateManifest();
+        try {
+            generateManifest();
+        } catch (IOException e) {
+           throw new MojoExecutionException("Error building package",e);
+        } catch (GitAPIException e) {
+            throw new MojoExecutionException("Error building package",e);
+        }
     }
 
     /**
@@ -124,7 +133,7 @@ public class PackageHelper {
     /**
      *
      */
-    protected void generateManifest() {
+    protected void generateManifest() throws IOException, GitAPIException {
         Manifest manifest = new Manifest();
         Attributes attributes = manifest.getMainAttributes();
         attributes.put(Attributes.Name.MANIFEST_VERSION, "1.0");
@@ -133,6 +142,8 @@ public class PackageHelper {
         if (mainVerticle != null) {
             attributes.put(MAIN_VERTICLE, mainVerticle);
         }
+
+        ManifestUtils.addExtraManifestInfo(mavenProject,attributes);
 
         try {
             ByteArrayOutputStream bout = new ByteArrayOutputStream();

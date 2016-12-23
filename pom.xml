@@ -218,6 +218,13 @@
             <version>${shrinkwrap.version}</version>
         </dependency>
 
+        <!-- SCM utils -->
+        <dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit</artifactId>
+            <version>4.4.1.201607150455-r</version>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.apache.maven.plugin-testing</groupId>
