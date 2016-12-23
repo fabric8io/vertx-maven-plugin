@@ -61,7 +61,7 @@ public class ExtraManifestInfoTest extends AbstractTestCase {
 
         String expected = "Manifest-Version: 1.0\n" +
             "Project-Name: vertx-demo\n" +
-            "User-Name: kameshs\n" +
+            "User-Name: "+System.getProperty("user.name")+"\n" +
             "Project-Dependencies: io.vertx:vertx-core:3.3.3\n" +
             "Project-Group: org.vertx.demo\n" +
             "Project-Version: 1.0.0-SNAPSHOT\n" +
@@ -95,7 +95,7 @@ public class ExtraManifestInfoTest extends AbstractTestCase {
 
         String expected = "Manifest-Version: 1.0\n" +
             "Project-Name: vertx-demo\n" +
-            "User-Name: kameshs\n" +
+            "User-Name: "+System.getProperty("user.name")+"\n" +
             "Project-Dependencies: com.example:example:3.3.3:vertx\n" +
             "Project-Group: org.vertx.demo\n" +
             "Project-Version: 1.0.0-SNAPSHOT\n" +
@@ -129,7 +129,7 @@ public class ExtraManifestInfoTest extends AbstractTestCase {
 
         String expected = "Manifest-Version: 1.0\n" +
             "Project-Name: vertx-demo\n" +
-            "User-Name: kameshs\n" +
+            "User-Name: "+System.getProperty("user.name")+"\n" +
             "Project-Dependencies: com.example:example:3.3.3:vertx\n" +
             "Scm-Tag: HEAD\n" +
             "Project-Group: org.vertx.demo\n" +

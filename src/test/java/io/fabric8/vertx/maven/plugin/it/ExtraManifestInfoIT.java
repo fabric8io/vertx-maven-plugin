@@ -168,7 +168,7 @@ public class ExtraManifestInfoIT extends VertxMojoTestBase {
         //Extract and Check Manifest for details
         assertThat(manifest).isNotNull();
 
-        manifest.write(System.out);
+        //manifest.write(System.out);
 
         //Check some manifest attributes
         String projectName = manifest.getMainAttributes().getValue(
