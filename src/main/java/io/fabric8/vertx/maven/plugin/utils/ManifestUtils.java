@@ -25,6 +25,8 @@ import org.apache.maven.model.Scm;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
+import org.tmatesoft.svn.core.SVNException;
+import org.tmatesoft.svn.core.wc.SVNWCClient;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +55,7 @@ public class ManifestUtils {
      * @throws GitAPIException - any error that might occur while reading and adding Git metadata
      */
     public static void addExtraManifestInfo(MavenProject project, Attributes attributes)
-        throws IOException, GitAPIException {
+        throws IOException, GitAPIException, SVNException {
 
         Model model = project.getModel();
 
@@ -91,13 +93,17 @@ public class ManifestUtils {
         //SCM metadata
         File baseDir = project.getBasedir();
         if (baseDir != null) {
-            File gitFolder = GitUtil.findGitFolder(baseDir);
-            if (gitFolder != null) {
-                Repository gitRepo = GitUtil.getGitRepository(project);
+            Repository gitRepo = GitUtil.getGitRepository(project);
+            SVNWCClient svnwcClient = SVNUtil.svnWorkingCopyClient(project);
+            if (svnwcClient != null) {
+                String revision = SVNUtil.getRevision(svnwcClient, project.getBasedir(), true);
+                attributes.put(attributeName(ExtraManifestKeys.scmRevision.name()), revision);
+                attributes.put(attributeName(ExtraManifestKeys.scmType.name()), "SVN");
+            } else if (gitRepo != null) {
                 String commitId = GitUtil.getGitCommitId(gitRepo);
                 attributes.put(attributeName(ExtraManifestKeys.commitId.name()), commitId);
+                attributes.put(attributeName(ExtraManifestKeys.scmType.name()), "Git");
             }
-            //TODO handle SVN
         }
 
     }

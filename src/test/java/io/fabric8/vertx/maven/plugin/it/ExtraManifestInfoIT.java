@@ -19,12 +19,22 @@ package io.fabric8.vertx.maven.plugin.it;
 import io.fabric8.vertx.maven.plugin.model.ExtraManifestKeys;
 import io.fabric8.vertx.maven.plugin.utils.GitUtil;
 import io.fabric8.vertx.maven.plugin.utils.ManifestUtils;
+import io.fabric8.vertx.maven.plugin.utils.SVNUtil;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.dircache.DirCache;
 import org.junit.Test;
+import org.tmatesoft.svn.core.SVNCommitInfo;
+import org.tmatesoft.svn.core.SVNDepth;
+import org.tmatesoft.svn.core.SVNException;
+import org.tmatesoft.svn.core.SVNURL;
+import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
+import org.tmatesoft.svn.core.wc.SVNClientManager;
+import org.tmatesoft.svn.core.wc.SVNCommitClient;
+import org.tmatesoft.svn.core.wc.SVNRevision;
+import org.tmatesoft.svn.core.wc.SVNUpdateClient;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,6 +51,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ExtraManifestInfoIT extends VertxMojoTestBase {
 
     String GIT_PROJECT_ROOT = "projects/manifest-git-it";
+    String SVN_PROJECT_ROOT = "projects/manifest-svn-it";
 
     private Verifier verifier;
 
@@ -52,11 +63,34 @@ public class ExtraManifestInfoIT extends VertxMojoTestBase {
         installPluginToLocalRepository(verifier.getLocalRepository());
     }
 
-    static Git prepareGitSCM(File testDir, Verifier verifier) throws IOException, GitAPIException {
+    private Git prepareGitSCM(File testDir, Verifier verifier) throws IOException, GitAPIException {
         Git git = Git.init().setDirectory(testDir).call();
         File gitFolder = GitUtil.findGitFolder(testDir);
         assertThat(gitFolder).isNotNull();
         return git;
+    }
+
+    private SVNURL prepareSVNRepo(File testDir, Verifier verifier) throws SVNException {
+        File svnPath = new File(testDir.getParent(), "svn-it-repo");
+        //force recreation local repo for test runs
+        SVNURL svnurl = SVNRepositoryFactory.createLocalRepository(svnPath, true, true);
+
+        //Import test project into svn
+        SVNClientManager svnClientManager = SVNClientManager.newInstance();
+
+        //add some dummy files
+        SVNCommitClient svnCommitter = svnClientManager.getCommitClient();
+
+        SVNCommitInfo svnCommitInfo = svnCommitter.doImport(testDir, svnurl,
+            "First Import",
+            null,
+            true,
+            true,
+            SVNDepth.INFINITY);
+
+        System.out.println("Successfully Imported project and revisioned as " + svnCommitInfo.getNewRevision());
+
+        return svnurl;
     }
 
     @Test
@@ -86,11 +120,46 @@ public class ExtraManifestInfoIT extends VertxMojoTestBase {
         git.commit().setMessage("First Import").call();
 
         runPackage(verifier);
-        assertManifest(testDir);
+        assertManifest(testDir, "git");
 
     }
 
-    private void assertManifest(File testDir) throws IOException {
+    @Test
+    public void testSVNSCM() throws SVNException, IOException, VerificationException {
+        File testDir = initProject(SVN_PROJECT_ROOT);
+        assertThat(testDir).isDirectory();
+
+        initVerifier(testDir);
+
+        prepareProject(testDir, verifier);
+
+        File svnFolder = SVNUtil.findSvnFolder(testDir);
+
+        assertThat(testDir).isNotNull();
+        assertThat(testDir.getName()).endsWith("manifest-svn-it");
+        assertThat(svnFolder).isNull();
+
+        SVNURL svnurl = prepareSVNRepo(testDir, verifier);
+
+        assertThat(testDir).isNotNull();
+        assertThat(testDir.getName()).endsWith("manifest-svn-it");
+
+        //Checkout sources from SVN Repo to test dir
+        SVNClientManager svnClientManager = SVNClientManager.newInstance();
+        SVNUpdateClient svnUpdateClient = svnClientManager.getUpdateClient();
+        long checkout = svnUpdateClient.doCheckout(svnurl, testDir, SVNRevision.HEAD,
+            SVNRevision.HEAD, SVNDepth.fromRecurse(true), false);
+
+        svnFolder = SVNUtil.findSvnFolder(testDir);
+        assertThat(svnFolder).isNotNull();
+        assertThat(checkout).isEqualTo(1);
+
+        runPackage(verifier);
+        assertManifest(testDir, "svn");
+
+    }
+
+    private void assertManifest(File testDir, String scm) throws IOException {
         verifier.assertFilePresent("target/vertx-demo-start-0.0.1.BUILD-SNAPSHOT.jar");
         File jarFile = new File(testDir, "target/vertx-demo-start-0.0.1.BUILD-SNAPSHOT.jar");
         assertThat(jarFile).isNotNull();
@@ -99,7 +168,7 @@ public class ExtraManifestInfoIT extends VertxMojoTestBase {
         //Extract and Check Manifest for details
         assertThat(manifest).isNotNull();
 
-        //manifest.write(System.out);
+        manifest.write(System.out);
 
         //Check some manifest attributes
         String projectName = manifest.getMainAttributes().getValue(
@@ -114,23 +183,40 @@ public class ExtraManifestInfoIT extends VertxMojoTestBase {
             ManifestUtils.attributeName(ExtraManifestKeys.projectVersion.name()));
         assertThat(projectVersion).isEqualTo("0.0.1.BUILD-SNAPSHOT");
 
+        String projectDeps = manifest.getMainAttributes().getValue(
+            ManifestUtils.attributeName(ExtraManifestKeys.projectDependencies.name()));
+        assertThat(projectDeps).isNotNull();
 
-        String commitId = manifest.getMainAttributes().getValue(
-            ManifestUtils.attributeName(ExtraManifestKeys.commitId.name()));
+        if ("git".equals(scm)) {
 
-        if (commitId != null) {
+            String scmType = manifest.getMainAttributes().getValue(
+                ManifestUtils.attributeName(ExtraManifestKeys.scmType.name()));
+            assertThat(scmType).isNotNull();
+            assertThat(scmType).isEqualTo("Git");
+
+            String commitId = manifest.getMainAttributes().getValue(
+                ManifestUtils.attributeName(ExtraManifestKeys.commitId.name()));
+            assertThat(commitId).isNotNull();
+
             Pattern pattern = Pattern.compile("^\\w*$");
             Matcher matcher = pattern.matcher(commitId);
             assertThat(matcher.matches()).isTrue();
-        }
-
-        String projectDeps = manifest.getMainAttributes().getValue(
-            ManifestUtils.attributeName(ExtraManifestKeys.projectDependencies.name()));
-
-        if (projectDeps != null) {
             assertThat(projectDeps)
                 .isEqualToIgnoringWhitespace("io.vertx:vertx-core:3.3.3 io.vertx:vertx-web:3.3.3 io.vertx:vertx-jdbc-client:3.3.3");
+
+        } else if ("svn".equals(scm)) {
+            String scmType = manifest.getMainAttributes().getValue(
+                ManifestUtils.attributeName(ExtraManifestKeys.scmType.name()));
+            assertThat(scmType).isNotNull();
+            assertThat(scmType).isEqualTo("SVN");
+            String revision = manifest.getMainAttributes().getValue(
+                ManifestUtils.attributeName(ExtraManifestKeys.scmRevision.name()));
+            assertThat(revision).isNotNull();
+            assertThat(revision).isEqualTo("1");
+            assertThat(projectDeps)
+                .isEqualToIgnoringWhitespace("io.vertx:vertx-core:3.3.3 io.vertx:vertx-web:3.3.3");
         }
+
     }
 
 

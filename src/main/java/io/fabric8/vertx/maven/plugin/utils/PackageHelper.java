@@ -29,6 +29,7 @@ import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.importer.ZipImporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.tmatesoft.svn.core.SVNException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -59,7 +60,7 @@ public class PackageHelper {
     private String outputFileName;
 
 
-    public PackageHelper(MavenProject mavenProject,String mainClass, String mainVerticle) {
+    public PackageHelper(MavenProject mavenProject, String mainClass, String mainVerticle) {
         this.archive = ShrinkWrap.create(JavaArchive.class);
         this.mainClass = mainClass;
         this.mainVerticle = mainVerticle;
@@ -93,7 +94,7 @@ public class PackageHelper {
      * @param primaryArtifactFile
      */
     private synchronized void build(File classes, File primaryArtifactFile) throws MojoExecutionException {
-        if (primaryArtifactFile != null  && primaryArtifactFile.isFile()) {
+        if (primaryArtifactFile != null && primaryArtifactFile.isFile()) {
             this.archive.as(ZipImporter.class).importFrom(primaryArtifactFile);
         } else if (classes.isDirectory()) {
             this.archive.addAsResource(classes, "/");
@@ -106,9 +107,11 @@ public class PackageHelper {
         try {
             generateManifest();
         } catch (IOException e) {
-           throw new MojoExecutionException("Error building package",e);
+            throw new MojoExecutionException("Error building package", e);
         } catch (GitAPIException e) {
-            throw new MojoExecutionException("Error building package",e);
+            throw new MojoExecutionException("Error building package", e);
+        } catch (SVNException e) {
+            throw new MojoExecutionException("Error building package", e);
         }
     }
 
@@ -133,7 +136,7 @@ public class PackageHelper {
     /**
      *
      */
-    protected void generateManifest() throws IOException, GitAPIException {
+    protected void generateManifest() throws IOException, GitAPIException, SVNException {
         Manifest manifest = new Manifest();
         Attributes attributes = manifest.getMainAttributes();
         attributes.put(Attributes.Name.MANIFEST_VERSION, "1.0");
@@ -143,7 +146,7 @@ public class PackageHelper {
             attributes.put(MAIN_VERTICLE, mainVerticle);
         }
 
-        ManifestUtils.addExtraManifestInfo(mavenProject,attributes);
+        ManifestUtils.addExtraManifestInfo(mavenProject, attributes);
 
         try {
             ByteArrayOutputStream bout = new ByteArrayOutputStream();
@@ -201,9 +204,9 @@ public class PackageHelper {
      * This method will perform the service provider combination by `combining` contents of same spi
      * across the dependencies
      *
-     * @param project          - the Maven project (must not be {@code null}
-     * @param backupDir        - the {@link File} path that can be used to perform backups
-     * @param targetJarFile    - the vertx fat jar file where the spi files will be updated - typically remove and add
+     * @param project       - the Maven project (must not be {@code null}
+     * @param backupDir     - the {@link File} path that can be used to perform backups
+     * @param targetJarFile - the vertx fat jar file where the spi files will be updated - typically remove and add
      * @throws MojoExecutionException - any error that might occur while doing relocation
      */
     public void combineServiceProviders(
