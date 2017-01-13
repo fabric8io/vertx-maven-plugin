@@ -424,8 +424,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h1>Vert.x Maven Plugin</h1>
 <div class="details">
 <span id="author" class="author">Kamesh Sampath, Roland Huß, Clement Escoffier</span><br>
-<span id="revnumber">version 1.0-SNAPSHOT,</span>
-<span id="revdate">2016-12-16</span>
+<span id="revnumber">version 1.0.2,</span>
+<span id="revdate">2017-01-13</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Vert.x Maven Plugin</div>
@@ -463,8 +463,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </ul>
 </li>
 <li><a href="#vertx:run">4.4. <strong>vertx:run</strong></a></li>
-<li><a href="#vertx:start">4.5. <strong>vertx:start</strong></a></li>
-<li><a href="#vertx:stop">4.6. <strong>vertx:stop</strong></a></li>
+<li><a href="#vertx:debug">4.5. <strong>vertx:debug</strong></a></li>
+<li><a href="#vertx:start">4.6. <strong>vertx:start</strong></a></li>
+<li><a href="#vertx:stop">4.7. <strong>vertx:stop</strong></a></li>
 </ul>
 </li>
 <li><a href="#vertx:examples">5. Example Configurations</a>
@@ -523,7 +524,7 @@ provide an opinionated way to build Vert.x application:</p>
 </ul>
 </div>
 <div class="paragraph">
-<p>The last version of the Vert.x Maven Plugin is <strong>1.0-SNAPSHOT</strong>.</p>
+<p>The last version of the Vert.x Maven Plugin is <strong>1.0.2</strong>.</p>
 </div>
 <div class="sect2">
 <h3 id="using-the-plugin">1.1. Using the plugin</h3>
@@ -826,6 +827,10 @@ in the next sections.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Run a Vert.x application in foreground</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="#vertx:debug"><strong>vertx:debug</strong></a></strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Debug a Vert.x application in foreground</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="#vertx:start"><strong>vertx:start</strong></a></strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Run a Vert.x application in daemon mode with specific id</p></td>
 </tr>
@@ -844,7 +849,7 @@ in the next sections.</p>
 <h4 id="example">4.1.1. Example</h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code>mvn io.fabric8:vertx-maven-plugin:1.0-SNAPSHOT:setup</code></pre>
+<pre class="highlightjs highlight"><code>mvn io.fabric8:vertx-maven-plugin:1.0.2:setup</code></pre>
 </div>
 </div>
 </div>
@@ -958,9 +963,21 @@ plugins in your build to <em>replay</em> them when a file changes.</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">classifier</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The classifier to use to for the <em>fat</em> jar. By default, it uses the main artifact name.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The classifier to add to the artifact generated. If given, the artifact will be attached with that classifier
+  and the main artifact will be deployed as the main artifact. If this is not given (default), it will replace
+  the main artifact and only the Vert.x (fat) jar artifact will be deployed (in the Maven sense). Attaching the
+  artifact allows to deploy it alongside to the original one. Attachment is controlled using the <code>attach</code>
+  parameter.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&nbsp;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&nbsp;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">attach</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Whether or not the created archive needs to be attached to the project. If attached, the <em>fat</em> jar is
+  installed and deployed alongside the main artifact (plain jar). Notice that you can&#8217;t disable attachment if
+  the classifier is not set (it would mean detaching the main artifact).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&nbsp;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
 </tr>
 </tbody>
 </table>
@@ -999,11 +1016,37 @@ defines all the applicable configurations for the goal</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">redeployScanPeriod</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The file system check period (in milliseconds)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">vertx.redeploy.scan.period</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1000</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">redeployGracePeriod</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The amount of time (in milliseconds) to wait between 2 re-deployments</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">vertx.redeploy.grace.period</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1000</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">redeployTerminationPeriod</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">the amount of time (in milliseconds) to wait after having stopped the application (before launching user command).
+  This is useful on Windows, where the process is not killed immediately.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">vertx.redeploy.termination.period</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1000 (1 second)</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">config</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">The configuration file to use to configure the application. This property is passed as the <code>-config</code> option to vertx
 run.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&nbsp;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">src/main/config/application.json or src/main/config/application.yml</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">jvmArgs</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The Java Options that will be used when starting the application, these are the values that are
+typically passed to vert.x applications using --java-opts.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">vertx.jvmArguments</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>no arguments</em></p></td>
 </tr>
 </tbody>
 </table>
@@ -1011,9 +1054,81 @@ run.</p></td>
 <p>When the redeployment is enabled, it replays the plugin configured between the <em>generate-source</em> and
 <em>process-classes</em> phases.</p>
 </div>
+<div class="paragraph">
+<p>So to start a Vert.x application just launch:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>mvn vertx:run</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If the sources are not compiled, the plugin executes <code>mvn compile</code> for you.</p>
+</div>
+<div class="paragraph">
+<p><strong>IMPORTANT</strong>: <code>vertx:run</code> starts the application in a forked JVM.</p>
+</div>
 </div>
 <div class="sect2">
-<h3 id="vertx:start">4.5. <strong>vertx:start</strong></h3>
+<h3 id="vertx:debug">4.5. <strong>vertx:debug</strong></h3>
+<div class="paragraph">
+<p>This goal allows to debug the Vert.x application.</p>
+</div>
+<div class="paragraph">
+<p>The goal does not have any exclusive configuration,  <strong><a href="#common:run-configurations">Common Run Configuration</a></strong>
+defines all the applicable configurations for the goal</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 9.0909%;">
+<col style="width: 45.4545%;">
+<col style="width: 18.1818%;">
+<col style="width: 27.2728%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Element</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Property</th>
+<th class="tableblock halign-left valign-top">Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">config</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The configuration file to use to configure the application. This property is passed as the <code>-config</code> option to vertx
+run.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&nbsp;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">src/main/config/application.json or src/main/config/application.yml</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">jvmArgs</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The Java Options that will be used when starting the application, these are the values that are
+typically passed to vert.x applications using --java-opts.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">vertx.jvmArguments</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>no arguments</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">debugPort</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The debugger port</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">debug.port</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5005</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">debugSuspend</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Whether or not the application must wait until a debugger is attached to start</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">debug.suspend</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><strong>IMPORTANT</strong>: the redeploy mode and debug cannot be used together. When <code>vertx:debug</code> is launched, the redeployment
+mode is disabled.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="vertx:start">4.6. <strong>vertx:start</strong></h3>
 <div class="paragraph">
 <p>This goal allows to start the Vert.x application as a background process from maven build. This goal triggers the vert.x
 <code>start</code> command, passing the configuration values as mentioned below.</p>
@@ -1068,14 +1183,11 @@ ignored by the goal,</p>
 <li>
 <p>redeploy</p>
 </li>
-<li>
-<p>fork - by default every start is a forked process</p>
-</li>
 </ul>
 </div>
 </div>
 <div class="sect2">
-<h3 id="vertx:stop">4.6. <strong>vertx:stop</strong></h3>
+<h3 id="vertx:stop">4.7. <strong>vertx:stop</strong></h3>
 <div class="paragraph">
 <p>This goal allows to stop the vert.x application running as background process from maven build. This goal triggers the vert.x
 <code>stop</code> command, passing the configuration values as mentioned below.</p>
@@ -1116,9 +1228,6 @@ ignored by the goal,</p>
 <li>
 <p>redeploy</p>
 </li>
-<li>
-<p>fork - by default every stop is a forked process</p>
-</li>
 </ul>
 </div>
 </div>
@@ -1137,7 +1246,7 @@ ignored by the goal,</p>
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-please update the plugin version as needed (latest is <strong>1.0-SNAPSHOT</strong>).
+please update the plugin version as needed (latest is <strong>1.0.2</strong>).
 </td>
 </tr>
 </table>
@@ -1289,8 +1398,7 @@ background. An id is automatically associated with the process. This id can be s
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-xml" data-lang="xml">---
-&lt;plugin&gt;
+<pre class="highlightjs highlight"><code class="language-xml" data-lang="xml">&lt;plugin&gt;
     &lt;groupId&gt;io.fabric8&lt;/groupId&gt;
     &lt;artifactId&gt;vertx-maven-plugin&lt;/artifactId&gt;
     &lt;version&gt;${version}&lt;/version&gt;
@@ -1303,8 +1411,7 @@ background. An id is automatically associated with the process. This id can be s
     &lt;configuration&gt;
         &lt;appId&gt;my-app-id&lt;/appId&gt;
     &lt;/configuration&gt;
-&lt;/plugin&gt;
----</code></pre>
+&lt;/plugin&gt;</code></pre>
 </div>
 </div>
 <div class="sect3">
@@ -1314,8 +1421,7 @@ background. An id is automatically associated with the process. This id can be s
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-xml" data-lang="xml">---
-&lt;plugin&gt;
+<pre class="highlightjs highlight"><code class="language-xml" data-lang="xml">&lt;plugin&gt;
     &lt;groupId&gt;io.fabric8&lt;/groupId&gt;
     &lt;artifactId&gt;vertx-maven-plugin&lt;/artifactId&gt;
     &lt;version&gt;${version}&lt;/version&gt;
@@ -1331,10 +1437,16 @@ background. An id is automatically associated with the process. This id can be s
           &lt;jvmArg&gt;-Xmx1024m&lt;/jvmArg&gt;
        &lt;/jvmArgs&gt;
     &lt;/configuration&gt;
-&lt;/plugin&gt;
----
-&lt;1&gt; The jvm arguments that gets passed as `--java-opts` to the vert.x application</code></pre>
+&lt;/plugin&gt;</code></pre>
 </div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>The jvm arguments that gets passed as <code>--java-opts</code> to the vert.x application</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p>You can also pass these parameters in the command line:</p>
@@ -1353,8 +1465,7 @@ of application ids as shown below to trigger stop of the those applications</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-xml" data-lang="xml">---
-&lt;plugin&gt;
+<pre class="highlightjs highlight"><code class="language-xml" data-lang="xml">&lt;plugin&gt;
     &lt;groupId&gt;io.fabric8&lt;/groupId&gt;
     &lt;artifactId&gt;vertx-maven-plugin&lt;/artifactId&gt;
     &lt;version&gt;${version}&lt;/version&gt;
@@ -1372,10 +1483,16 @@ of application ids as shown below to trigger stop of the those applications</p>
             &lt;/configuration&gt;
         &lt;/execution&gt;
     &lt;/executions&gt;
-&lt;/plugin&gt;
----
-&lt;1&gt; List of custom unique application ids</code></pre>
+&lt;/plugin&gt;</code></pre>
 </div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>List of custom unique application ids</td>
+</tr>
+</table>
 </div>
 </div>
 </div>
@@ -1404,8 +1521,8 @@ of application ids as shown below to trigger stop of the those applications</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 1.0-SNAPSHOT<br>
-Last updated 2016-12-16 14:44:38 UTC
+Version 1.0.2<br>
+Last updated 2017-01-13 08:28:47 UTC
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/styles/github.min.css">
