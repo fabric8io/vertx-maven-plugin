@@ -424,8 +424,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h1>Vert.x Maven Plugin</h1>
 <div class="details">
 <span id="author" class="author">Kamesh Sampath, Roland Huß, Clement Escoffier</span><br>
-<span id="revnumber">version 1.0.2,</span>
-<span id="revdate">2017-01-13</span>
+<span id="revnumber">version 1.0.3,</span>
+<span id="revdate">2017-02-02</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Vert.x Maven Plugin</div>
@@ -466,6 +466,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#vertx:debug">4.5. <strong>vertx:debug</strong></a></li>
 <li><a href="#vertx:start">4.6. <strong>vertx:start</strong></a></li>
 <li><a href="#vertx:stop">4.7. <strong>vertx:stop</strong></a></li>
+<li><a href="#vertx:setup">4.8. <strong>vertx:setup</strong></a>
+<ul class="sectlevel3">
+<li><a href="#example-2">4.8.1. Example</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#vertx:examples">5. Example Configurations</a>
@@ -480,6 +485,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel3">
 <li><a href="#start-with-java-opts">5.2.1. start goal with custom java options</a></li>
 <li><a href="#stopping-one-or-more-applications">5.2.2. stopping one or more applications</a></li>
+<li><a href="#run-with-extra-args">5.2.3. Adding some extra options to run command</a></li>
 </ul>
 </li>
 </ul>
@@ -524,7 +530,7 @@ provide an opinionated way to build Vert.x application:</p>
 </ul>
 </div>
 <div class="paragraph">
-<p>The last version of the Vert.x Maven Plugin is <strong>1.0.2</strong>.</p>
+<p>The last version of the Vert.x Maven Plugin is <strong>1.0.3</strong>.</p>
 </div>
 <div class="sect2">
 <h3 id="using-the-plugin">1.1. Using the plugin</h3>
@@ -835,6 +841,10 @@ in the next sections.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Run a Vert.x application in daemon mode with specific id</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="#vertx:setup"><strong>vertx:setup</strong></a></strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Sets up vert.x maven plugin and basic vert.x dependencies on an existing maven project</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="#vertx:stop"><strong>vertx:stop</strong></a></strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Stops the vert.x application running in daemon mode</p></td>
 </tr>
@@ -849,8 +859,25 @@ in the next sections.</p>
 <h4 id="example">4.1.1. Example</h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code>mvn io.fabric8:vertx-maven-plugin:1.0.2:setup</code></pre>
+<pre class="highlightjs highlight"><code>mvn io.fabric8:vertx-maven-plugin:1.0.3:setup</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>The setup goal by default uses the plugin property <em>vertx-core-version</em>
+from the plugin properties file vertx-maven-plugin.properties as the vert.x version of the project,
+if you wish to override the vertx version, then you can run the same command as above with <code>-DvertxVersion=&lt;your-vertx-version&gt;</code></p>
+</div>
+<div class="paragraph">
+<p>e.g.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>mvn io.fabric8:vertx-maven-plugin:{version}:setup -DvertxVersion=3.4.0-SNAPSHOT</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This will configure the vert.x and its dependencies to <code>3.4.0-SNAPSHOT</code> i.e. Maven project property <code>vertx.version</code>
+set to <code>3.4.0-SNAPSHOT</code></p>
 </div>
 </div>
 </div>
@@ -990,8 +1017,7 @@ plugins in your build to <em>replay</em> them when a file changes.</p>
 The application is always run as a forked process.</p>
 </div>
 <div class="paragraph">
-<p>The goal does not have any exclusive configuration,  <strong><a href="#common:run-configurations">Common Run Configuration</a></strong>
-defines all the applicable configurations for the goal</p>
+<p>The goal has the following exclusive configuration apart from the applicable <strong><a href="#common:run-configurations">Common Run Configuration</a></strong></p>
 </div>
 <table class="tableblock frame-all grid-all spread">
 <colgroup>
@@ -1009,6 +1035,27 @@ defines all the applicable configurations for the goal</p>
 </tr>
 </thead>
 <tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">runArgs</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The list of arguments that can be passed as part of <code>run</code> command.  You can also pass the required run arguments using the system
+property. e.g. <code>-Dvertx.runArgs="--worker --instances=2"</code>. The system property takes precedence over the plugin configurations</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">vertx.runArgs</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&nbsp;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">config</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The configuration file to use to configure the application. This property is passed as the <code>-config</code> option to vertx
+run.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&nbsp;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">src/main/config/application.json or src/main/config/application.yml</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">jvmArgs</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The Java Options that will be used when starting the application, these are the values that are
+typically passed to vert.x applications using --java-opts.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">vertx.jvmArguments</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>no arguments</em></p></td>
+</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">redeploy</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Whether or not the redeployment is enabled</p></td>
@@ -1035,18 +1082,10 @@ defines all the applicable configurations for the goal</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">1000 (1 second)</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">config</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The configuration file to use to configure the application. This property is passed as the <code>-config</code> option to vertx
-run.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">worker</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">If specified the verticle will be a worker verticle</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&nbsp;</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">src/main/config/application.json or src/main/config/application.yml</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">jvmArgs</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The Java Options that will be used when starting the application, these are the values that are
-typically passed to vert.x applications using --java-opts.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">vertx.jvmArguments</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>no arguments</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
 </tr>
 </tbody>
 </table>
@@ -1072,11 +1111,12 @@ typically passed to vert.x applications using --java-opts.</p></td>
 <div class="sect2">
 <h3 id="vertx:debug">4.5. <strong>vertx:debug</strong></h3>
 <div class="paragraph">
-<p>This goal allows to debug the Vert.x application.</p>
+<p>This goal allows to debug the Vert.x application. The application is started in a JVM with the debugging enabled. In
+your IDE, you need to create a <strong>remote</strong> debug configuration to plug the debugger.</p>
 </div>
 <div class="paragraph">
 <p>The goal does not have any exclusive configuration,  <strong><a href="#common:run-configurations">Common Run Configuration</a></strong>
-defines all the applicable configurations for the goal</p>
+defines all the applicable configurations for the goal.</p>
 </div>
 <table class="tableblock frame-all grid-all spread">
 <colgroup>
@@ -1231,6 +1271,37 @@ ignored by the goal,</p>
 </ul>
 </div>
 </div>
+<div class="sect2">
+<h3 id="vertx:setup">4.8. <strong>vertx:setup</strong></h3>
+<div class="paragraph">
+<p>This goal adds the Vert.x Maven Plugin to your <code>pom.xml</code> file. The plugin is configured with a default configuration.</p>
+</div>
+<div class="sect3">
+<h4 id="example-2">4.8.1. Example</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>mvn io.fabric8:vertx-maven-plugin:1.0.3:setup</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The setup goal by default uses the plugin property <em>vertx-core-version</em>
+from the plugin properties file vertx-maven-plugin.properties as the vert.x version of the project,
+if you wish to override the vertx version, then you can run the same command as above with <code>-DvertxVersion=&lt;your-vertx-version&gt;</code></p>
+</div>
+<div class="paragraph">
+<p>e.g.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>mvn io.fabric8:vertx-maven-plugin:{version}:setup -DvertxVersion=3.4.0-SNAPSHOT</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This will configure the vert.x and its dependencies to <code>3.4.0-SNAPSHOT</code> i.e. Maven project property <code>vertx.version</code>
+set to <code>3.4.0-SNAPSHOT</code></p>
+</div>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -1246,7 +1317,7 @@ ignored by the goal,</p>
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-please update the plugin version as needed (latest is <strong>1.0.2</strong>).
+please update the plugin version as needed (latest is <strong>1.0.3</strong>).
 </td>
 </tr>
 </table>
@@ -1495,6 +1566,31 @@ of application ids as shown below to trigger stop of the those applications</p>
 </table>
 </div>
 </div>
+<div class="sect3">
+<h4 id="run-with-extra-args">5.2.3. Adding some extra options to run command</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml" data-lang="xml"> &lt;plugin&gt;
+    &lt;groupId&gt;io.fabric8&lt;/groupId&gt;
+    &lt;artifactId&gt;vertx-maven-plugin&lt;/artifactId&gt;
+    &lt;version&gt;${version}&lt;/version&gt;
+    &lt;executions&gt;
+        &lt;execution&gt;
+            &lt;phase&gt;package&lt;/phase&gt;
+            &lt;goals&gt;
+                &lt;goal&gt;run&lt;/goal&gt;
+            &lt;/goals&gt;
+            &lt;configuration&gt;
+                &lt;runArgs&gt;
+                    &lt;runArg&gt;--cluster&lt;/runArg&gt;
+                &lt;/runArgs&gt;
+            &lt;/configuration&gt;
+        &lt;/execution&gt;
+    &lt;/executions&gt;
+&lt;/plugin&gt;</code></pre>
+</div>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -1521,8 +1617,8 @@ of application ids as shown below to trigger stop of the those applications</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 1.0.2<br>
-Last updated 2017-01-13 08:28:47 UTC
+Version 1.0.3<br>
+Last updated 2017-02-02 13:15:22 UTC
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/styles/github.min.css">
