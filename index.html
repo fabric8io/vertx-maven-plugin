@@ -424,8 +424,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h1>Vert.x Maven Plugin</h1>
 <div class="details">
 <span id="author" class="author">Kamesh Sampath, Roland Huß, Clement Escoffier</span><br>
-<span id="revnumber">version 1.0.3,</span>
-<span id="revdate">2017-02-02</span>
+<span id="revnumber">version 1.0.4,</span>
+<span id="revdate">2017-02-04</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Vert.x Maven Plugin</div>
@@ -530,7 +530,7 @@ provide an opinionated way to build Vert.x application:</p>
 </ul>
 </div>
 <div class="paragraph">
-<p>The last version of the Vert.x Maven Plugin is <strong>1.0.3</strong>.</p>
+<p>The last version of the Vert.x Maven Plugin is <strong>1.0.4</strong>.</p>
 </div>
 <div class="sect2">
 <h3 id="using-the-plugin">1.1. Using the plugin</h3>
@@ -859,7 +859,7 @@ in the next sections.</p>
 <h4 id="example">4.1.1. Example</h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code>mvn io.fabric8:vertx-maven-plugin:1.0.3:setup</code></pre>
+<pre class="highlightjs highlight"><code>mvn io.fabric8:vertx-maven-plugin:1.0.4:setup</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -878,6 +878,34 @@ if you wish to override the vertx version, then you can run the same command as 
 <div class="paragraph">
 <p>This will configure the vert.x and its dependencies to <code>3.4.0-SNAPSHOT</code> i.e. Maven project property <code>vertx.version</code>
 set to <code>3.4.0-SNAPSHOT</code></p>
+</div>
+<div class="paragraph">
+<p>You can also generate a project if you don&#8217;t have a <code>pom.xml</code> file:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>mvn io.fabric8:vertx-maven-plugin:1.0.4:setup \
+    -DprojectGroupId=org.acme \
+    -DprojectArtifactId=acme-project \
+    -DprojectVersion=1.0-SNAPSHOT \ # default to 1.0-SNAPSHOT
+    -Dverticle=org.acme.Foo \
+    -Ddependencies=web,jmx,mongo</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>verticle</code> parameter creates a new verticle class file.
+The <code>dependencies</code> parameters specifies the Vert.x dependencies you need.</p>
+</div>
+<div class="paragraph">
+<p>Dependencies are selected from a list of know dependencies matching the one listed on <a href="http://vertx.io/docs" class="bare">http://vertx.io/docs</a>. In
+addition, you can configure dependencies using the following syntax: <code>groupId:artifactId:version:classifier</code> such as in:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>io.vertx:vertxcodetrans =&gt; Inherit version from BOM
+commons-io:commons-io:2.5 =&gt; Regular dependency
+io.vertx:vertx-template-engines:3.4.0-SNAPSHOT:shaded =&gt; Dependency with classifier</pre>
+</div>
 </div>
 </div>
 </div>
@@ -1280,7 +1308,7 @@ ignored by the goal,</p>
 <h4 id="example-2">4.8.1. Example</h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code>mvn io.fabric8:vertx-maven-plugin:1.0.3:setup</code></pre>
+<pre class="highlightjs highlight"><code>mvn io.fabric8:vertx-maven-plugin:1.0.4:setup</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1300,6 +1328,34 @@ if you wish to override the vertx version, then you can run the same command as 
 <p>This will configure the vert.x and its dependencies to <code>3.4.0-SNAPSHOT</code> i.e. Maven project property <code>vertx.version</code>
 set to <code>3.4.0-SNAPSHOT</code></p>
 </div>
+<div class="paragraph">
+<p>You can also generate a project if you don&#8217;t have a <code>pom.xml</code> file:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>mvn io.fabric8:vertx-maven-plugin:1.0.4:setup \
+    -DprojectGroupId=org.acme \
+    -DprojectArtifactId=acme-project \
+    -DprojectVersion=1.0-SNAPSHOT \ # default to 1.0-SNAPSHOT
+    -Dverticle=org.acme.Foo \
+    -Ddependencies=web,jmx,mongo</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>verticle</code> parameter creates a new verticle class file.
+The <code>dependencies</code> parameters specifies the Vert.x dependencies you need.</p>
+</div>
+<div class="paragraph">
+<p>Dependencies are selected from a list of know dependencies matching the one listed on <a href="http://vertx.io/docs" class="bare">http://vertx.io/docs</a>. In
+addition, you can configure dependencies using the following syntax: <code>groupId:artifactId:version:classifier</code> such as in:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>io.vertx:vertxcodetrans =&gt; Inherit version from BOM
+commons-io:commons-io:2.5 =&gt; Regular dependency
+io.vertx:vertx-template-engines:3.4.0-SNAPSHOT:shaded =&gt; Dependency with classifier</pre>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -1317,7 +1373,7 @@ set to <code>3.4.0-SNAPSHOT</code></p>
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-please update the plugin version as needed (latest is <strong>1.0.3</strong>).
+please update the plugin version as needed (latest is <strong>1.0.4</strong>).
 </td>
 </tr>
 </table>
@@ -1617,8 +1673,8 @@ of application ids as shown below to trigger stop of the those applications</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 1.0.3<br>
-Last updated 2017-02-02 13:15:22 UTC
+Version 1.0.4<br>
+Last updated 2017-02-04 13:31:44 UTC
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/styles/github.min.css">
