@@ -17,8 +17,12 @@
 
 package io.fabric8.vertx.maven.plugin.mojos;
 
+import io.fabric8.vertx.maven.plugin.utils.DependencyUtil;
 import io.fabric8.vertx.maven.plugin.utils.WebJars;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.lifecycle.LifecycleExecutor;
 import org.apache.maven.plugin.AbstractMojo;
@@ -26,10 +30,11 @@ import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectHelper;
 import org.apache.maven.scm.manager.ScmManager;
 import org.codehaus.plexus.PlexusConstants;
 import org.codehaus.plexus.PlexusContainer;
+import org.codehaus.plexus.context.Context;
+import org.codehaus.plexus.context.ContextException;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
@@ -38,8 +43,6 @@ import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
 
-import org.codehaus.plexus.context.Context;
-import org.codehaus.plexus.context.ContextException;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -208,6 +211,28 @@ public abstract class AbstractVertxMojo extends AbstractMojo implements Contextu
     protected boolean skip;
 
     /**
+     * The dependencies that should be excluded when performing the fat jar
+     * The dependencies will be of maven g:[a::c] format.
+     * <pre>
+     *     <dependencyExcludes>
+     *         Excludes all artifacts under groupId <b>org.acme</b>
+     *         <dependencyExclude>>org.acme</dependencyExclude>
+     *          Excludes all artifacts under groupId org.acme with artifactId dummy with any classifier
+     *         <dependencyExclude>org.acme:dummy</dependencyExclude>
+     *         Excludes all artifacts under groupId <b>org.acme</b> with artifactId dummy with <b>classifier</b> client
+     *         <dependencyExclude>org.acme:dummy::client</dependencyExclude>
+     *         (or)
+     *         <dependencyExclude>org.acme:dummy:1.0.0:client</dependencyExclude>
+     *         When using classifer it's required to provide specific like <b>1.0.0</b> or empty version <b>:</b>
+     *     </dependencyExcludes>
+     * </pre>
+     *
+     * @since 1.0.8
+     */
+    @Parameter(alias = "dependencyExcludes", property = "vertx.dependency.excludes")
+    protected List<String> dependencyExcludes;
+
+    /**
      * The Plexus container.
      */
     protected PlexusContainer container;
@@ -253,38 +278,12 @@ public abstract class AbstractVertxMojo extends AbstractMojo implements Contextu
             .filter(e -> e.getScope().equals("compile") || e.getScope().equals("runtime"))
             .filter(e -> e.getType().equalsIgnoreCase("jar"))
             .filter(e -> !WebJars.isWebJar(getLog(), e.getFile()))
-            .map(this::asMavenCoordinates)
+            .map(DependencyUtil::asMavenCoordinates)
             .distinct()
             .map(this::resolveArtifact)
             .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    /**
-     * this method helps in resolving the {@link Artifact} as maven coordinates
-     * coordinates ::= group:artifact:version:[packaging]:[classifier]
-     *
-     * @param artifact - the artifact which need to be represented as maven coordinate
-     * @return string representing the maven coordinate
-     */
-    protected String asMavenCoordinates(Artifact artifact) {
-        // TODO-ROL: Shouldn't there be also the classified included after the groupId (if given ?)
-        // Maybe we we should simply reuse DefaultArtifact.toString() (but could be too fragile as it might change
-        // although I don't think it will change any time soon since probably many people already
-        // rely on it)
-        StringBuilder artifactCords = new StringBuilder().
-            append(artifact.getGroupId())
-            .append(":")
-            .append(artifact.getArtifactId())
-            .append(":")
-            .append(artifact.getVersion());
-        if (!"jar".equals(artifact.getType())) {
-            artifactCords.append(":").append(artifact.getType());
-        }
-        if (artifact.hasClassifier()) {
-            artifactCords.append(":").append(artifact.getClassifier());
-        }
-        return artifactCords.toString();
-    }
 
     /**
      * This method returns the project's primary artifact file, this method tries to compute the artifact file name
@@ -308,6 +307,7 @@ public abstract class AbstractVertxMojo extends AbstractMojo implements Contextu
 
     /**
      * Retrieves the Plexus container.
+     *
      * @param context the context
      * @throws ContextException if the container cannot be retrieved.
      */
