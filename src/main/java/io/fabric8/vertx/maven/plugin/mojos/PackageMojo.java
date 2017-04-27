@@ -18,6 +18,7 @@
 package io.fabric8.vertx.maven.plugin.mojos;
 
 import io.fabric8.vertx.maven.plugin.model.CombinationStrategy;
+import io.fabric8.vertx.maven.plugin.utils.DependencyUtil;
 import io.fabric8.vertx.maven.plugin.utils.PackageHelper;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
@@ -34,6 +35,7 @@ import org.apache.maven.project.MavenProject;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -104,7 +106,7 @@ public class PackageMojo extends AbstractVertxMojo {
         }
 
         // Fix empty classifier.
-        if (classifier != null  && classifier.trim().isEmpty()) {
+        if (classifier != null && classifier.trim().isEmpty()) {
             getLog().debug("The classifier is empty, it won't be used");
             classifier = null;
         }
@@ -118,12 +120,32 @@ public class PackageMojo extends AbstractVertxMojo {
 
         Optional<File> primaryArtifactFile = getArtifactFile(artifact);
 
+        Set<Optional<File>> compileAndRuntimeDeps = new LinkedHashSet<>();
+        Set<Optional<File>> transitiveDeps = new LinkedHashSet<>();
+
         //Step 0: Resolve and Collect Dependencies as g:a:v:t:c coordinates
 
-        Set<Optional<File>> compileAndRuntimeDeps = extractArtifactPaths(this.project.getDependencyArtifacts());
-        Set<Optional<File>> transitiveDeps = extractArtifactPaths(this.project.getArtifacts());
+        if (dependencyExcludes != null && !dependencyExcludes.isEmpty()) {
+            //Compile and Runtime
+            Set<Artifact> compileAndRuntimeDepArtifacts = this.project.getDependencyArtifacts();
+            Set<Artifact> filteredDeps = DependencyUtil.filteredDependencies(compileAndRuntimeDepArtifacts,
+                dependencyExcludes);
+            compileAndRuntimeDepArtifacts.removeAll(filteredDeps);
+            compileAndRuntimeDeps = extractArtifactPaths(compileAndRuntimeDepArtifacts);
+            filteredDeps.clear();
 
-        PackageHelper packageHelper = new PackageHelper(this.launcher, this.verticle,this.project,this.scmManager)
+            //Transitive --TODO -SK how to remove the transitive dependencies as well ??
+            Set<Artifact> transitiveDepArtifacts = this.project.getArtifacts();
+            filteredDeps = DependencyUtil.filteredDependencies(transitiveDepArtifacts, dependencyExcludes);
+            transitiveDepArtifacts.removeAll(filteredDeps);
+            transitiveDeps = extractArtifactPaths(transitiveDepArtifacts);
+            filteredDeps.clear();
+        } else {
+            compileAndRuntimeDeps = extractArtifactPaths(this.project.getDependencyArtifacts());
+            transitiveDeps = extractArtifactPaths(this.project.getArtifacts());
+        }
+
+        PackageHelper packageHelper = new PackageHelper(this.launcher, this.verticle, this.project, this.scmManager)
             .withOutputName(computeOutputName(project, classifier))
             .compileAndRuntimeDeps(compileAndRuntimeDeps)
             .transitiveDeps(transitiveDeps);
