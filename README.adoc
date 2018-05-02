@@ -1,5 +1,10 @@
 = Maven Plugin for Eclipse Vert.x
 
+**The project has been migrated to: https://github.com/reactiverse/vertx-maven-plugin and https://reactiverse.io/vertx-maven-plugin/ for the documentation**
+
+This repository should not be used anymore.
+
+
 //[cols="2,2"]
 //|===
 //|Circle CI (Linux / OS X)| AppVeyor (Windows)
